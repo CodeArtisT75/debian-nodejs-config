@@ -136,3 +136,85 @@ run this command to install PM2:
 ```bash
 npm install -g pm2
 ```
+
+## Installing Yarn:
+
+run this command to install yarn:
+
+```bash
+npm install -g yarn
+```
+
+## Deploying project on server:
+
+login with your project user.
+
+first of all upload your files (or pull from git):
+
+```bash
+git pull YOUR_REPOSITORY_ADDRESS
+```
+
+then install packages with your package manager (npm or yarn):
+
+```bash
+npm install
+yarn install
+```
+
+create MySQL database for your project with superuser:
+
+```bash
+mysql
+```
+
+and run these commands:
+
+```SQL
+CREATE DATABASE YOUR_DB_NAME COLLATE utf8_general_ci;
+CREATE USER 'YOUR_DB_USERNAME'@'localhost' IDENTIFIED BY 'YOUR_DB_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, SHOW VIEW ON YOUR_DB_NAME.* TO 'YOUR_DB_USERNAME'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+make your public directories PIBLIC :) :
+
+```bash
+chmod -R 700 /YOUR_PROJECT_PUBLIC_DIRECTORY
+```
+
+set your ENVIROMENT variables (mostly in .env file):
+
+```bash
+nano .env
+```
+
+run your app with PM2:
+
+```bash
+pm2 start app.js --name your_app_name
+```
+
+finally configure nginx:
+
+```bash
+server {
+  listen 80;
+
+  server_name myapp.com;
+
+  location / {
+      proxy_pass http://localhost:3000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_cache_bypass $http_upgrade;
+  }
+}
+```
+
+###### port = 3000 | domain = myapp.com
