@@ -16,20 +16,13 @@ reboot
 install these packages:
 
 ```bash
-apt install -y curl wget apt-transport-https
+apt install -y curl wget apt-transport-https git
 ```
 
-set password for www-data user:
+create user for your project:
 
 ```bash
-passwd www-data
-```
-
-set www-data home to /opt:
-
-```bash
-usermod -d /opt/ www-data
-chmod -R 700 /opt
+adduser APP_USER
 ```
 
 ## Installing NodeJS:
