@@ -59,6 +59,14 @@ apt install nginx
 
 ## Installing MySQL:
 
+run this commands to add MySQL Repo:
+
+```bash
+wget http://repo.mysql.com/mysql-apt-config_0.8.14-1_all.deb
+
+apt update
+```
+
 run this command to install MySQL:
 
 ```bash
