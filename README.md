@@ -92,6 +92,30 @@ apt update
 apt install mongodb-org
 ```
 
+run this command to set password for root:
+
+```bash
+mongo admin --eval 'db.createUser({ user:"root", pwd:"YOUR_PASSWORD", roles:[{role:"root", db:"admin"}]})'
+```
+
+after that go to this file:
+
+```bash
+nano /etc/mongodb.conf
+```
+
+and set `auth` to `true`:
+
+```bash
+auth=true
+```
+
+finally restart mongodb service
+
+```bash
+systemctl restart mongodb
+```
+
 ## Installing Redis:
 
 run this command:
