@@ -147,28 +147,17 @@ npm install -g yarn
 
 ## Deploying project on server:
 
-login with your project user.
+### before uploading files:
 
-first of all upload your files (or pull from git):
+remember you have to create a MySQL database for your project ***(with superuser)***.
 
-```bash
-git pull YOUR_REPOSITORY_ADDRESS
-```
-
-then install packages with your package manager (npm or yarn):
-
-```bash
-npm install
-yarn install
-```
-
-create MySQL database for your project with superuser:
+run this command with SU:
 
 ```bash
 mysql
 ```
 
-and run these commands:
+and run these commands to create a database and a user for it:
 
 ```SQL
 CREATE DATABASE YOUR_DB_NAME COLLATE utf8_general_ci;
@@ -177,25 +166,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORA
 FLUSH PRIVILEGES;
 ```
 
-make your public directories PIBLIC :) :
-
-```bash
-chmod -R 700 /YOUR_PROJECT_PUBLIC_DIRECTORY
-```
-
-set your ENVIROMENT variables (mostly in .env file):
-
-```bash
-nano .env
-```
-
-run your app with PM2:
-
-```bash
-pm2 start app.js --name your_app_name
-```
-
-finally configure nginx:
+if you want to proxy-forward your app with Nginx, copy these command in `/etc/nginx/sites-available/default`:
 
 ```bash
 server {
@@ -218,3 +189,38 @@ server {
 ```
 
 ###### port = 3000 | domain = myapp.com
+
+### Now you can upload your files
+
+login with your project user.
+
+first of all upload your files (or pull from git):
+
+```bash
+git pull YOUR_REPOSITORY_ADDRESS
+```
+
+then install packages with your package manager (npm or yarn):
+
+```bash
+npm install
+yarn install
+```
+
+make your public directories Public :) :
+
+```bash
+chmod -R 700 /YOUR_PROJECT_PUBLIC_DIRECTORY
+```
+
+set your ENVIROMENT variables (mostly in .env file):
+
+```bash
+nano .env
+```
+
+run your app with PM2:
+
+```bash
+pm2 start app.js --name your_app_name
+```
