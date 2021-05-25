@@ -168,7 +168,7 @@ FLUSH PRIVILEGES;
 
 if you want to proxy-forward your app with Nginx, copy these command in `/etc/nginx/sites-available/default`:
 
-```bash
+```nginx
 server {
   listen 80;
 
@@ -188,7 +188,28 @@ server {
 }
 ```
 
+### Tip: in production you may want to disable server signature. for this purpose do:
+
+1- install nginx-extras:
+```bash
+apt install nginx-extras
+```
+
+2- open `/etc/nginx/nginx.conf` and turn off `server_tokens `:
+```nginx
+http {
+    more_set_headers "Server: Your_New_Server_Name";
+    server_tokens off; 
+}
+```
+
+3- restart `nginx`:
+```bash
+systemctl restart nginx
+```
+
 ###### port = 3000 | domain = myapp.com
+
 
 ### Now you can upload your files
 
