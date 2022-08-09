@@ -228,12 +228,6 @@ npm install
 yarn install
 ```
 
-make your public directories Public :) :
-
-```bash
-chmod -R 700 /YOUR_PROJECT_PUBLIC_DIRECTORY
-```
-
 set your ENVIROMENT variables (mostly in .env file):
 
 ```bash
