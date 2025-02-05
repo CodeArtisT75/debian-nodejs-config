@@ -1,181 +1,172 @@
-# Default config for Debian 10 server (Nodejs + Nginx)
+# Default Configuration for Debian Server (Node.js + Nginx)
 
-## Server preparation:
+## Server Preparation
 
-Run these commands (as SU) to update all dependencies and then reboot:
+Run these commands (as root) to update all dependencies and reboot:
 
 ```bash
-apt update
-apt upgrade
-apt autoremove
-apt autoclean
-
+apt update && apt upgrade -y
+apt autoremove -y
+apt autoclean -y
 reboot
 ```
 
-install these packages:
+Install required packages:
 
 ```bash
 apt install -y curl wget apt-transport-https git
 ```
 
-create user for your project:
+Create a user for your project:
 
 ```bash
 adduser APP_USER
 ```
 
-## Installing NodeJS:
+---
 
-run these commands to install nodejs:
+## Installing Node.js
+
+To install Node.js using NVM, run:
 
 ```bash
 cd ~
-curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
-bash nodesource_setup.sh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-apt install nodejs
-
-rm nodesource_setup.sh
+# Use the desired Node.js version
+nvm use 22
 ```
 
-###### if you want to install another version just change 14.x to the version you want.
+> **Tip:** If you need another version, replace `22` with the required version number.
 
+---
 
-## Installing Nginx:
-
-run this command:
+## Installing Nginx
 
 ```bash
-apt install nginx
+apt install -y nginx
 ```
 
-## Installing MySQL:
+---
 
-run this commands to add MySQL Repo:
+## Installing MySQL
+
+Add the MySQL repository and install MySQL:
 
 ```bash
 wget http://repo.mysql.com/mysql-apt-config_0.8.14-1_all.deb
-
 apt update
-```
-
-run this command to install MySQL:
-
-```bash
 apt install -y mysql-server
 ```
 
-after that, run this command to configure it:
+Run the MySQL secure installation wizard:
 
 ```bash
 mysql_secure_installation
 ```
 
-## Installing MongoDB:
-
-run this command to install MongoDB:
-
-```bash
-wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
-echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-
-apt update
-
-apt install mongodb-org
-```
-
-run this command to set password for root:
-
-```bash
-mongo admin --eval 'db.createUser({ user:"root", pwd:"YOUR_PASSWORD", roles:[{role:"root", db:"admin"}]})'
-```
-
-after that go to this file:
-
-```bash
-nano /etc/mongodb.conf
-```
-
-and set `auth` to `true`:
-
-```bash
-auth=true
-```
-
-finally restart mongodb service
-
-```bash
-systemctl restart mongodb
-```
-
-## Installing Redis:
-
-run this command:
-
-```bash
-apt install redis-server
-```
-
-to set password for redis, go to this file:
-
-```bash
-nano /etc/redis/redis.conf
-```
-
-uncomment `requirepass` and fill it with your password:
-
-```bash
-requirepass YOU_PASSWORD
-```
-
-## Installing PM2:
-
-run this command to install PM2:
-
-```bash
-npm install -g pm2
-```
-
-## Installing Yarn:
-
-run this command to install yarn:
-
-```bash
-npm install -g yarn
-```
-
-## Deploying project on server:
-
-### before uploading files:
-
-remember you have to create a MySQL database for your project ***(with superuser)***.
-
-run this command with SU:
+Create a database and a user:
 
 ```bash
 mysql
 ```
 
-and run these commands to create a database and a user for it:
+Run the following commands inside MySQL:
 
-```SQL
+```sql
 CREATE DATABASE YOUR_DB_NAME COLLATE utf8_general_ci;
 CREATE USER 'YOUR_DB_USERNAME'@'localhost' IDENTIFIED BY 'YOUR_DB_PASSWORD';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, SHOW VIEW ON YOUR_DB_NAME.* TO 'YOUR_DB_USERNAME'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-if you want to proxy-forward your app with Nginx, copy these command in `/etc/nginx/sites-available/default`:
+---
+
+## Installing PostgreSQL
+
+Install PostgreSQL:
+
+```bash
+apt install -y postgresql postgresql-contrib
+```
+
+Ensure the service is running:
+
+```bash
+systemctl start postgresql
+```
+
+Create a PostgreSQL user and database:
+
+```bash
+sudo -u postgres createuser --interactive
+sudo -u postgres createdb DB_NAME
+```
+
+---
+
+## Installing Redis
+
+```bash
+apt install -y redis-server
+```
+
+Set a Redis password:
+
+```bash
+nano /etc/redis/redis.conf
+```
+
+Uncomment `requirepass` and set your password:
+
+```conf
+requirepass YOUR_PASSWORD
+```
+
+Restart Redis:
+
+```bash
+systemctl restart redis
+```
+
+---
+
+## Installing PM2
+
+```bash
+npm install -g pm2
+```
+
+---
+
+## Installing Yarn
+
+```bash
+npm install -g yarn
+```
+
+---
+
+## Deploying the Project on the Server
+
+### Pre-Deployment Steps
+
+- Create a MySQL or PostgreSQL database for your project (**with superuser permissions**).
+- If using Nginx for proxy forwarding, update the default configuration file:
+
+```bash
+nano /etc/nginx/sites-available/default
+```
+
+Add the following configuration:
 
 ```nginx
 server {
   listen 80;
-
-  server_name myapp.com;
+  server_name myapp.com; # Replace with your domain
 
   location / {
-      proxy_pass http://localhost:3000;
+      proxy_pass http://localhost:3000; # Change to your app's port
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection 'upgrade';
@@ -188,54 +179,70 @@ server {
 }
 ```
 
-### Tip: in production you may want to disable server signature. for this purpose do:
+### Enhancing Security: Disable Server Signature
 
-1- install nginx-extras:
-```bash
-apt install nginx-extras
-```
+1. Install `nginx-extras`:
+   ```bash
+   apt install -y nginx-extras
+   ```
+2. Edit Nginx configuration:
+   ```bash
+   nano /etc/nginx/nginx.conf
+   ```
+   Add the following:
+   ```nginx
+   http {
+       more_set_headers "Server: Your_New_Server_Name";
+       server_tokens off;
+   }
+   ```
+3. Restart Nginx:
+   ```bash
+   systemctl restart nginx
+   ```
 
-2- open `/etc/nginx/nginx.conf` and turn off `server_tokens `:
-```nginx
-http {
-    more_set_headers "Server: Your_New_Server_Name";
-    server_tokens off; 
-}
-```
+---
 
-3- restart `nginx`:
-```bash
-systemctl restart nginx
-```
+## Uploading Project Files
 
-###### port = 3000 | domain = myapp.com
-
-
-### Now you can upload your files
-
-login with your project user.
-
-first of all upload your files (or pull from git):
+Log in with the project user and pull the latest files from the repository:
 
 ```bash
 git pull YOUR_REPOSITORY_ADDRESS
 ```
 
-then install packages with your package manager (npm or yarn):
+Install dependencies using your package manager:
 
 ```bash
 npm install
+# or
 yarn install
 ```
 
-set your ENVIROMENT variables (mostly in .env file):
+Set environment variables (typically in a `.env` file):
 
 ```bash
 nano .env
 ```
 
-run your app with PM2:
+Run the application with PM2:
 
 ```bash
+pm install -g pm2
 pm2 start app.js --name your_app_name
 ```
+
+Or using Docker Compose:
+
+```bash
+docker compose --profile profile_name up -d --build
+```
+
+---
+
+### Notes
+
+- Default application port: `3000`
+- Default domain: `myapp.com`
+
+This guide ensures a robust, production-ready setup for your Node.js application on a Debian server. 🚀
